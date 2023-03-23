@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BackgroundProcessing.Api", "BackgroundProcessingAPI\BackgroundProcessing.Api.csproj", "{D42F7E8A-F0FE-471A-B606-041A0A8779F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BackgroundProcessing.Api", "BackgroundProcessing.Api\BackgroundProcessing.Api.csproj", "{D42F7E8A-F0FE-471A-B606-041A0A8779F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackgroundProcessing.Domain", "BackgroundProcessing.Domain\BackgroundProcessing.Domain.csproj", "{C8D41D33-FA13-4450-9904-ABB4929A93F6}"
 EndProject
