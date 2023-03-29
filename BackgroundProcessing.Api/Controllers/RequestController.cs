@@ -1,6 +1,7 @@
 using Azure.Core;
 using BackgroundProcessing.Domain;
 using BackgroundProcessing.Service;
+using BackgroundProcessing.ServiceBusQueue;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackgroundProcessing.Api.Controllers
@@ -29,9 +30,9 @@ namespace BackgroundProcessing.Api.Controllers
         }
 
         [HttpPost(Name = "SubmitItemForProcessing")]
-        public async Task<Guid> Post(ProcessingRequest request)
+        public async Task<Guid> Post(ProcessingRequest request, CancellationToken token)
         {
-            return await _backgroundProcessingDataService.AddItemAsync(request);
+            return await _backgroundProcessingDataService.AddItemAsync(request, token);
         }
 
         [HttpDelete(Name = "RemoveProcessedItem")]

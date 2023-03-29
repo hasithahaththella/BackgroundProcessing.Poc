@@ -1,6 +1,8 @@
-
+using BackgroundProcessing.Core;
+using BackgroundProcessing.Core.Settings;
 using BackgroundProcessing.Data;
 using BackgroundProcessing.Service;
+using BackgroundProcessing.ServiceBusQueue;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackgroundProcessing.Api
@@ -17,6 +19,8 @@ namespace BackgroundProcessing.Api
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+       
 
             //if (app.Environment.IsDevelopment())
             //{
@@ -40,11 +44,13 @@ namespace BackgroundProcessing.Api
             );
 
             // Register services
+            builder.Services.AddSingleton<IAzureSettingsManager, AzureSettingsManager>();
+            builder.Services.AddSingleton<IServiceBusQueueService, ServiceBusQueueService>();
             builder.Services.AddTransient<BackgroundProcessingDataService>();
 
 
             // Registering a console logger for PoC
-            builder.Services.AddSingleton<BackgroundProcessing.Service.WriteLine>((text, highlight, isException) =>
+            builder.Services.AddSingleton<WriteLine>((text, highlight, isException) =>
             {
                 if (isException)
                 {

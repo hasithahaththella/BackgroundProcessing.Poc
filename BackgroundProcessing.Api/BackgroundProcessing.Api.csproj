@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BackgroundProcessing.Core\BackgroundProcessing.Core.csproj" />
     <ProjectReference Include="..\BackgroundProcessing.Service\BackgroundProcessing.Service.csproj" />
   </ItemGroup>
 

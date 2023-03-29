@@ -1,19 +1,27 @@
-﻿using BackgroundProcessing.Data;
+﻿using BackgroundProcessing.Core;
+using BackgroundProcessing.Data;
 using BackgroundProcessing.Domain;
+using BackgroundProcessing.ServiceBusQueue;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using System.Text.Json;
 
 namespace BackgroundProcessing.Service
 {
-    public delegate void WriteLine(string text, bool highlight, bool isException);
+    
 
     public class BackgroundProcessingDataService
     {
+        private readonly IServiceBusQueueService _serviceBusQueueService;
         private readonly IDbContextFactory<BackgroundProcessingContext> contextFactory;
         private readonly WriteLine logger;
 
-        public BackgroundProcessingDataService(IDbContextFactory<BackgroundProcessingContext> contextFactory, WriteLine logger)
+        public BackgroundProcessingDataService(
+            IServiceBusQueueService serviceBusQueueService,
+            IDbContextFactory<BackgroundProcessingContext> contextFactory, 
+            WriteLine logger)
         {
+            this._serviceBusQueueService = serviceBusQueueService;
             this.contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(contextFactory));
             CreateDatabaseIfNotExisit().Wait();
@@ -55,7 +63,7 @@ namespace BackgroundProcessing.Service
             }
         }
 
-        public async Task<Guid> AddItemAsync(ProcessingRequest item)
+        public async Task<Guid> AddItemAsync(ProcessingRequest item, CancellationToken cancellationToken)
         {
             logger("Adding new processing request..", false, false);
 
@@ -83,6 +91,18 @@ namespace BackgroundProcessing.Service
                 throw new ApplicationException(ex.Message, ex);
             }
 
+
+            try 
+            {
+                // Submit to Azure service bus queue
+                await _serviceBusQueueService.SendMessageAsync(item.Id.Value.ToString(), 
+                    JsonSerializer.Serialize(new DataStoreItem() { Id = item.Id.Value, InputValue = item.InputValue }),
+                    cancellationToken);
+            }
+            catch (Exception ex) 
+            {
+                logger($"Adding new message to service bus queue has failed. {Environment.NewLine}{ex.Message}", true, true);
+            }
 
             return item.Id.Value;
         }
@@ -115,43 +135,5 @@ namespace BackgroundProcessing.Service
                 return response;
             }
         }
-
-        //public Task<Guid> UpdateItem(ProcessedRequest item)
-        //{
-        //    logger("Adding new processing request..", false, false);
-
-        //    try
-        //    {
-        //        using (var context = await contextFactory.CreateDbContextAsync())
-        //        {
-        //            context.Add(new DataStoreItem
-        //            {
-        //                Id = item.Id.Value,
-        //                InputValue = item.InputValue,
-        //                State = State.Queued
-        //            });
-
-        //            await context.SaveChangesAsync();
-        //            logger($"New processing request : {item.Id} has been saved successfully..", false, false);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        logger($"Adding new processing request to database has failed. {Environment.NewLine}{ex.Message}", true, true);
-        //        throw new ApplicationException(ex.Message, ex);
-        //    }
-
-
-        //    return item.Id.Value;
-        //}
-
-        //public void RemoveItem(Guid id)
-        //{
-        //    if (!items.ContainsKey(id))
-        //        return;
-
-        //    items.Remove(id, out _);
-        //}
-
     }
 }
